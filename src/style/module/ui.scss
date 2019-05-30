@@ -81,7 +81,7 @@
 }
 
 /* -------------∽-★-∽--- 点击进入游戏面板 ---∽-★-∽------------- */
-.intoGame {
+.into-game {
     @include dfc;
 }
 
@@ -118,5 +118,7 @@
             margin-top: 30px;
         }
     }
-
+    @keyframes colorRotate {
+        100% { filter: hue-rotate(360deg) }
+    }
 }

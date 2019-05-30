@@ -1,40 +1,69 @@
 import UI from "./UI"
+import Rect from "./Rect"
+import Scene from "./Scene"
+import {User} from "./Block/Unit"
+import Control from "./Control"
 
 class Game {
-    width = 1000
-    height = 600
-    centerX = 500
-    centerY = 300
-    domRoot = $(".root")      // DOM根节点对象
+    rootRect = new Rect(0, 0, 1000, 600)
+    $domRoot = $(".root")     // DOM根节点对象
     user = null               // 用户角色
 
-    userGroup = []            // 用户组block
-    enemyGroup = []           // 敌方组block
+    UI = new UI()
 
     init() {
-        this.UI = new UI()
-        // this.Music = new Music()
-        // this.Control = new Control()
+        this.$domRoot.width(this.rootRect.width).height(this.rootRect.height)
 
-        this.UI.change("intoGame")
-        // this.Music.playBgm('bgm_main')
-        // this.UI.change('menu')
-        // })
+        // this.UI.change("into-game")
 
-        // 用户单位
-        // this.user = new Green(this.centerX, this.centerY).speedClear()
-        // pointerExpansion(this.user, 's1')
-        //
         // 注册基本按钮事件
         this.eventBase()
-        // // 注册用户角色方向键控制
-        // this.userControl()
+        this.startGame()
     }
 
     // 注册基本事件
     eventBase() {
-        $("#intoBtn").one("click", () => {
-            this.UI.change("menu")
+        // 注册所有Btn点击音效
+        this.registerBtnEvent("click", ".btn", () => console.log("点击音效"), 0)
+        // 点击进入游戏按钮
+        this.registerBtnEvent("click", "#into-btn", () => this.UI.change("menu"))
+        // 开始游戏按钮
+        this.registerBtnEvent("click", "#btn-start", () => this.startGame())
+    }
+
+    // 开始游戏
+    async startGame() {
+        await this.UI.hide()
+
+        const scene = new Scene(this.$domRoot)
+        const control = new Control(this.$domRoot)
+        const user = this.user = new User(this.rootRect.centerX, this.rootRect.centerY, true, scene).init().speedClear()
+
+        // 注册键盘控制
+        control.onDirChange((count, dir) => {
+            if(count) {
+                this.user.setAngle(dir)
+            } else {
+                this.user.speedClear()
+            }
+        })
+        scene.addIntoScene(this.user, "userGroup")
+        scene.play()
+    }
+
+    /**
+     * 注册按钮事件
+     * @param {string} event - 同jquery的event
+     * @param {string} handle - 同jquery的handle
+     * @param {function} fn - 触发函数
+     * @param {number=1000} interval - 触发间隔
+     */
+    registerBtnEvent(event, handle, fn, interval = 1000) {
+        let triggerDate = 0
+        this.$domRoot.on(event, handle, () => {
+            if(Date.now() - triggerDate < interval) return
+            triggerDate = Date.now()
+            fn()
         })
     }
 }
