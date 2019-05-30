@@ -14,7 +14,8 @@ class Block {
     hp = 0              // 生命
     angle = 0           // 角度
     radian = 0          // 弧度
-    baseSpeed = 0       // 基础速度
+    isBirth = false     // 是否已经进入场景
+    enclosures = []     // 附件
     speed = 0           // 当前速度
     x = 0
     y = 0
@@ -23,11 +24,8 @@ class Block {
     vx = 0              // x轴移动速度
     vy = 0              // y轴移动速度
 
-    // 是否已经死亡
-    get isDestroy() { return this.hp <= 0 }
-    get centerX(){ return this.x + this.width / 2 }
-    get centerY(){ return this.y + this.height / 2 }
 
+    // 构造函数
     constructor(x, y, centerCreate = false, scene) {
         if(centerCreate){
             x -= this.width / 2
@@ -38,23 +36,44 @@ class Block {
         this.scene = scene
         this.$dom = $("<div>").addClass(Block.baseClass)
     }
-
     // 初始化
     init() {
         this.$dom.addClass(this.className)
         this.$dom.get(0).style.cssText = `left: ${this.x}px; top: ${this.y}px; width: ${this.width}px; height: ${this.height}px`
+        this.enclosures = this.enclosures.map(v => new v(this).init())
         this.decomposeSpeed()
         return this
     }
 
+    /* -------------∽-★-∽--- getter ---∽-★-∽------------- */
+    // 是否已经死亡
+    get isDestroy() { return this.hp <= 0 }
+    // 中心点x
+    get centerX(){ return this.x + this.width / 2 }
+    // 中心点y
+    get centerY(){ return this.y + this.height / 2 }
+
+    /* -------------∽-★-∽--- 动画 & 场景 ---∽-★-∽------------- */
+    // 播放预警动画
     async playPreAni() {
         if(!this.preAni) return Promise.resolve()
         await new this.preAni().show(this.centerX, this.centerY, this.scene)
     }
+    // 播放出生动画
     async playBirthAni() {
         if(!this.birthAni) return Promise.resolve()
         await new this.birthAni().show(this.centerX, this.centerY, this.scene)
     }
+    // 出生
+    async birth(){
+        await this.playPreAni()
+        this.playBirthAni()
+        this.scene.$dom.append(this.$dom)
+        this.enclosures.forEach(v => v.birth())
+        this.isBirth = true
+    }
+
+    /* -------------∽-★-∽--- 附件 ---∽-★-∽------------- */
 
     // 销毁
     destroy = (hasAni = true) => {
@@ -69,12 +88,14 @@ class Block {
         // this.skill.forEach(v => v.next())
         this.x += this.vx
         this.y += this.vy
+        this.enclosures.forEach(v => v.next())
         return this
     }
     // 更新显示效果
     update = () => {
         this.$dom.get(0).style.left = `${this.x}px`
         this.$dom.get(0).style.top = `${this.y}px`
+        this.enclosures.forEach(v => v.update())
         return this
     }
     // 死亡事件

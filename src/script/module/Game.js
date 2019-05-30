@@ -10,6 +10,7 @@ class Game {
     user = null               // 用户角色
 
     UI = new UI()
+    Control = new Control(this.$domRoot)
 
     init() {
         this.$domRoot.width(this.rootRect.width).height(this.rootRect.height)
@@ -35,20 +36,26 @@ class Game {
     async startGame() {
         await this.UI.hide()
 
-        const scene = new Scene(this.$domRoot)
-        const control = new Control(this.$domRoot)
-        const user = this.user = new User(this.rootRect.centerX, this.rootRect.centerY, true, scene).init().speedClear()
+        const scene = new Scene(this)
+        this.user = new User(this.rootRect.centerX, this.rootRect.centerY, true, scene).init().speedClear()
+
+        await scene.addIntoScene(this.user, "userGroup")
 
         // 注册键盘控制
-        control.onDirChange((count, dir) => {
+        this.Control.onDirChange((count, dir) => {
             if(count) {
                 this.user.setAngle(dir)
             } else {
                 this.user.speedClear()
             }
         })
-        scene.addIntoScene(this.user, "userGroup")
-        scene.play()
+        this.Control.updateGounding()
+
+        let loop = () => {
+            scene.next()
+            requestAnimationFrame(loop)
+        }
+        loop()
     }
 
     /**

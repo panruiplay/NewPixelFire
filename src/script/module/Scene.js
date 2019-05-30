@@ -25,15 +25,18 @@ class Scene extends Rect {
         )
     }
 
+    /** @type {Block} */
+    user                      // 用户单位
     /** @type {Block[]} */
     userGroup = []            // 用户组block
     /** @type {Block[]} */
     enemyGroup = []           // 敌方组block
 
-    constructor(dom) {
-        let $dom = $(dom)
+    constructor(game) {
+        let $dom = $(game.$domRoot)
         super(0, 0, $dom.width(), $dom.height())
         this.$dom = $dom
+        this.Game = game
     }
 
     /**
@@ -42,25 +45,18 @@ class Scene extends Rect {
      * @param {"userGroup"|"enemyGroup"} group
      */
     async addIntoScene(block, group) {
-        await block.playPreAni()
-        block.playBirthAni()
-        this.$dom.append(block.$dom)
+        await block.birth()
         this[group].push(block)
     }
 
     // 运行
-    play() {
+    next() {
         const userGroup = this.userGroup
 
-        const loop = () => {
-            for(let i = this.userGroup.length - 1; i >= 0; i--) {
-                let block = userGroup[i]
-                block.next().update()
-            }
-            requestAnimationFrame(loop)
+        for(let i = this.userGroup.length - 1; i >= 0; i--) {
+            let block = userGroup[i]
+            block.next().update()
         }
-
-        requestAnimationFrame(loop)
     }
 }
 

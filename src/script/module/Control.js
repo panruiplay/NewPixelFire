@@ -10,6 +10,9 @@ class Control {
         // key: [fn, fn, fn]
     }
 
+    $domRoot
+    mouseX  // 鼠标x
+    mouseY  // 鼠标y
     OL = 0  // root容器与浏览器左边距离
     OT = 0  // root容器与浏览器顶边距离
 
@@ -29,13 +32,10 @@ class Control {
         'v-11': -135
     }
 
-    constructor(domRoot) {
-        window.onresize = () => {
-            let { left, top } = domRoot.get(0).getBoundingClientRect()
-            this.OL = left + 5
-            this.OT = top + 5
-        }
-        window.onresize()
+    constructor($domRoot) {
+        this.$domRoot = $domRoot
+        this.updateGounding()
+        window.onresize = this.updateGounding.bind(this)
 
         document.onkeydown = this._down_interface.bind(this)
         document.onkeyup = this._up_interface.bind(this)
@@ -121,6 +121,12 @@ class Control {
         if(evtArr) {
             evtArr.forEach(v => v(count, deg))
         }
+    }
+
+    updateGounding(){
+        let { left, top } = this.$domRoot.get(0).getBoundingClientRect()
+        this.OL = left + 5
+        this.OT = top + 5
     }
 
     // 禁用方向键监听

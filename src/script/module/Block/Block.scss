@@ -35,13 +35,7 @@
     box-shadow: 0 0 15px 2px #5884FF;
     border-radius: 50%;
 }
-/*------------------------瞄准器------------------------*/
-.san1 {
-    border-radius: 50%;
-    border: 2px solid #96FF4E;
-    border-bottom-color: transparent;
-    border-left-color: transparent;
-}
+
 /*------------------------动画------------------------*/
 @keyframes block-rotate {
     0%{ transform: rotate(0deg) }
